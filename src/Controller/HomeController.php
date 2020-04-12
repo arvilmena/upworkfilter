@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\ProjectRepository;
+use Doctrine\ORM\Query;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,16 +32,23 @@ class HomeController extends AbstractController
             20 /*limit per page*/
         );
 
+        // Recently Read Projects.
         $qb = $projectRepository->createQueryBuilder('p');
         $qb->andWhere($qb->expr()->eq('p.should_bid', true));
         $qb->andWhere($qb->expr()->isNotNull('p.has_been_read_at'));
         $qb->orderBy('p.has_been_read_at', 'DESC');
         $recentlyReadProjects = $qb->setMaxResults(10)->getQuery()->getResult();
 
+        // Last Id.
+        $qb = $projectRepository->createQueryBuilder('p');
+        $qb->orderBy('p.id', 'DESC')->setMaxResults(1);
+        $last_project = $qb->select('p.id')->getQuery()->getSingleResult(Query::HYDRATE_ARRAY);
+
         return $this->render('home/index.html.twig', [
             'controller_name' => 'HomeController',
             'pagination' => $pagination,
-            'recentlyReadProjects' => $recentlyReadProjects
+            'recentlyReadProjects' => $recentlyReadProjects,
+            'last_project' => $last_project
         ]);
     }
 }

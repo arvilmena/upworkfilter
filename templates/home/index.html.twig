@@ -88,6 +88,38 @@
 
     <script>
         $(document).ready(function() {
+            var lastKnownId = {{ (last_project.id) ? last_project.id : 'null' }};
+            if ( 0 === lastKnownId ) return;
+            console.log('lastKnownId', lastKnownId);
+
+            function fetchNotification() {
+                if (!Notification) {
+                    $('body').append('<h4 style="color:red">*Browser does not support Web Notification</h4>');
+                    return;
+                }
+                if (Notification.permission !== "granted")
+                    Notification.requestPermission();
+                else {
+                    var jxhr = $.get("{{ path('api-later-project-count', {'lastId': last_project.id }) }}");
+                    jxhr.done(function(response) {
+                       if ( 0 < response.newProjects ) {
+                           var $msg = response.newProjects + ' new project' + (( response.newProjects === 1 ) ? '' : 's') + '!';
+                           var notif = new Notification($msg);
+                           notif.onclick = function() {
+                               window.location.reload();
+                               window.focus();
+                               notif.close();
+                           };
+                       } else {
+                           console.log('no new project');
+                       }
+                    });
+                }
+            }
+            setInterval(fetchNotification,60000);
+            fetchNotification();
+        });
+        $(document).ready(function() {
             $("time.timeago").timeago();
         });
         $(document).on("mousedown", function (e1) {
