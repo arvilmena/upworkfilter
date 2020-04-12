@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\ProjectRepository;
+use App\Repository\ScrapeRepository;
 use Doctrine\ORM\Query;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,7 +19,7 @@ class HomeController extends AbstractController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function index(ProjectRepository $projectRepository, PaginatorInterface $paginator, Request $request)
+    public function index(ProjectRepository $projectRepository, ScrapeRepository $scrapeRepository, PaginatorInterface $paginator, Request $request)
     {
         $qb = $projectRepository->createQueryBuilder('p');
         $qb->andWhere($qb->expr()->eq('p.should_bid', true));
@@ -44,11 +45,16 @@ class HomeController extends AbstractController
         $qb->orderBy('p.id', 'DESC')->setMaxResults(1);
         $last_project = $qb->select('p.id')->getQuery()->getSingleResult(Query::HYDRATE_ARRAY);
 
+        // Last crawl.
+        $qb = $scrapeRepository->createQueryBuilder('s');
+        $last_srape = $qb->orderBy('s.crawled_at', 'DESC')->select('s.crawled_at')->setMaxResults(1)->getQuery()->getSingleResult(Query::HYDRATE_ARRAY);
+
         return $this->render('home/index.html.twig', [
             'controller_name' => 'HomeController',
             'pagination' => $pagination,
             'recentlyReadProjects' => $recentlyReadProjects,
-            'last_project' => $last_project
+            'last_project' => $last_project,
+            'last_scrape' => $last_srape
         ]);
     }
 }
