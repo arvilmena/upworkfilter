@@ -96,6 +96,7 @@
             var lastKnownId = {{ (last_project.id) ? last_project.id : 'null' }};
             if ( 0 === lastKnownId ) return;
             console.log('lastKnownId', lastKnownId);
+            var lastNotif;
 
             function fetchNotification() {
                 if (!Notification) {
@@ -108,20 +109,26 @@
                     var jxhr = $.get("{{ path('api-later-project-count', {'lastId': last_project.id }) }}");
                     jxhr.done(function(response) {
                        if ( 0 < response.newProjects ) {
-                           var $msg = response.newProjects + ' new project' + (( response.newProjects === 1 ) ? '' : 's') + '!';
-                           var notif = new Notification($msg);
+                           if (lastNotif) {
+                               lastNotif.close();
+                           }
+                           var $title = response.newProjects + ' new project' + (( response.newProjects === 1 ) ? '' : 's') + '!';
+                           var notif = new Notification($title, {
+                               requireInteraction: true
+                           });
                            notif.onclick = function() {
                                window.location.reload();
                                window.focus();
                                notif.close();
                            };
+                           lastNotif = notif;
                        } else {
                            console.log('no new project');
                        }
                     });
                 }
             }
-            setInterval(fetchNotification,60000);
+            setInterval(fetchNotification, 60000);
             fetchNotification();
         });
         $(document).ready(function() {
