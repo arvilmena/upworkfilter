@@ -28,12 +28,19 @@ class HomeController extends AbstractController
         $pagination = $paginator->paginate(
             $query, /* query NOT result */
             $request->query->getInt('page', 1), /*page number*/
-            10 /*limit per page*/
+            20 /*limit per page*/
         );
+
+        $qb = $projectRepository->createQueryBuilder('p');
+        $qb->andWhere($qb->expr()->eq('p.should_bid', true));
+        $qb->andWhere($qb->expr()->isNotNull('p.has_been_read_at'));
+        $qb->orderBy('p.has_been_read_at', 'DESC');
+        $recentlyReadProjects = $qb->setMaxResults(10)->getQuery()->getResult();
 
         return $this->render('home/index.html.twig', [
             'controller_name' => 'HomeController',
-            'pagination' => $pagination
+            'pagination' => $pagination,
+            'recentlyReadProjects' => $recentlyReadProjects
         ]);
     }
 }

@@ -16,6 +16,7 @@ declare(strict_types=1);
 namespace App\Service\PeoplePerHour;
 
 use App\Entity\Project;
+use App\Service\AppConstants;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -27,6 +28,16 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 
 class PeoplePerHourProjectPageAnalyzerService {
+
+    /**
+     * @var AppConstants
+     */
+    private $appConstants;
+
+    public function __construct(AppConstants $appConstants)
+    {
+        $this->appConstants = $appConstants;
+    }
 
     public function analyze(string $url, string $title, string $description, string $pubDate, string $pageHtml) {
         $crawler = new Crawler($pageHtml);
@@ -46,13 +57,16 @@ class PeoplePerHourProjectPageAnalyzerService {
             $project->setShouldBid(false);
         }
 
-        if ( false !== $project->getShouldBid() ) {
-            $project->setShouldBid(true);
-        }
-
         $price = $this->getBudget($crawler);
         if ( ! empty($price) ) {
             $project->setBudget($price);
+        }
+        if ( ! empty($project->getBudget()) && 1 === preg_match('/\/hr/m', $project->getBudget()) ) {
+            $project->setShouldBid(false);
+        }
+
+        if ( false !== $project->getShouldBid() ) {
+            $project->setShouldBid(true);
         }
 
         return $project;
@@ -75,11 +89,10 @@ class PeoplePerHourProjectPageAnalyzerService {
             return false;
         }
         $location = ucwords($location);
-        if (1 === preg_match("/India/", $location)) {
-            return true;
-        }
-        if (1 === preg_match("/Bangladesh/", $location)) {
-            return true;
+        foreach($this->appConstants::BAD_COUNTRY_ARRAY as $bad_country) {
+            if (1 === preg_match("/" . $bad_country . "/", $location)) {
+                return true;
+            }
         }
         return false;
     }

@@ -16,38 +16,59 @@
         {{ knp_pagination_render(pagination) }}
     </div>
 
-    <div id="projects" class="card-columns">
-        {% for project in pagination  %}
-            {% set link = path( 'project-read', {id: project.getId()} ) %}
-                <div class="card">
-                    <div class="card-header">
-                        <a href="{{ link }}" target="_blank"><strong>{{ project.getTitle() }}</strong></a>
-                    </div>
-                    <div class="card-body">
+</div>
 
-                        {% if project.getPostedAt()|length %}
-                            {% set readableDate = project.getPostedAt()|date('F jS, Y g:ia') %}
-                            <span class="badge badge-pill badge-success"><time class="timeago" datetime="{{ project.getPostedAt()|date('Y-m-d\\TH:i:sP') }}" title="{{ readableDate }}">{{ readableDate }}</time></span>
-                        {% endif %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-12 col-md-10">
+                <div id="projects" class="card-columns">
+                    {% for project in pagination  %}
+                        {% set link = path( 'project-read', {id: project.getId()} ) %}
+                        <div class="card">
+                            <div class="card-header">
+                                <a class="js-project-link" href="{{ link }}" target="_blank"><strong>{{ project.getTitle() }}</strong></a>
+                            </div>
+                            <div class="card-body">
 
-                        <span class="badge badge-pill badge-success">{{ project.getPlatform() }}</span>
-                        {% if project.getLocation()|length %}
-                            <span class="badge badge-pill badge-warning">{{ project.getLocation() }}</span>
-                        {% endif %}
-                        {% if project.getBudget()|length %}
-                            <span class="badge badge-pill badge-success">{{ project.getBudget() }}</span>
-                        {% endif %}
+                                {% if project.getPostedAt()|length %}
+                                    {% set readableDate = project.getPostedAt()|date('F jS, Y g:ia') %}
+                                    <span class="badge badge-pill badge-success"><time class="timeago" datetime="{{ project.getPostedAt()|date('Y-m-d\\TH:i:sP') }}" title="{{ readableDate }}">{{ readableDate }}</time></span>
+                                {% endif %}
 
-                        <div class="card-text project-description" data-linkify="this">
-                            {{ project.getDescription()|raw|nl2br }}
+                                <span class="badge badge-pill badge-success">{{ project.getPlatform() }}</span>
+                                {% if project.getLocation()|length %}
+                                    <span class="badge badge-pill badge-warning">{{ project.getLocation() }}</span>
+                                {% endif %}
+                                {% if project.getBudget()|length %}
+                                    <span class="badge badge-pill badge-success">{{ project.getBudget() }}</span>
+                                {% endif %}
+
+                                <div class="card-text project-description" data-linkify="this">
+                                    {{ project.getDescription()|raw|nl2br }}
+                                </div>
+
+                                <a href="{{ link }}" target="_blank" class="js-project-link mt-3 btn btn-primary">Read</a>
+                            </div>
                         </div>
-
-                        <a href="{{ link }}" target="_blank" class="mt-3 btn btn-primary">Read</a>
-                    </div>
+                    {% endfor %}
                 </div>
-        {% endfor %}
+            </div>
+
+            <div class="col col-12 col-md-2">
+                <strong>Recently opened</strong>
+                <ul class="list-group">
+                    {% for project in recentlyReadProjects %}
+                        <li>
+                            <a href="{{ project.getUrl() }}" target="_blank">{{ project.getTitle() }}</a>
+                            <span class="badge badge-pill badge-success">{{ project.getPlatform() }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
 
+<div class="container">
     <div class="row justify-content-center">
         {{ knp_pagination_render(pagination) }}
     </div>
@@ -68,6 +89,42 @@
     <script>
         $(document).ready(function() {
             $("time.timeago").timeago();
+        });
+        $(document).on("mousedown", function (e1) {
+            $(document).on("mouseup", function (e2) {
+                if (e1.which == 2 && e1.target == e2.target) {
+                    var e3 = $.event.fix(e2);
+                    e3.type = "middleclick";
+                    $(e2.target).trigger(e3)
+                }
+            });
+        });
+        $(document).ready(function() {
+            var handleClick = function(e) {
+                var $card = $(this).closest('.card');
+                if ( 0 === $card.length ) return;
+                $card.remove();
+            };
+            $('.js-project-link').click(handleClick);
+            $(document).on("mousedown", function (e1) {
+                if (e1.which === 2) {
+                    $(document).one("mouseup", function (e2) {
+                        if (e1.target === e2.target) {
+                            var e3 = $.event.fix(e2);
+                            e3.type = "middleclick";
+                            $(e2.target).trigger(e3);
+                        }
+                    });
+                }
+            });
+            $(document).on("middleclick", ".js-project-link", function(e) {
+                window.open(
+                    $(this)[0].href, "_blank"
+                );
+                var $card = $(this).closest('.card');
+                if ( 0 === $card.length ) return;
+                $card.remove();
+            });
         });
     </script>
 {% endblock %}

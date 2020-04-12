@@ -26,4 +26,11 @@ class AppConstants {
 
     const PROJECT_LISTING_TYPE = 'PROJECT_LISTING';
 
+    const BAD_COUNTRY_ARRAY = [
+        'India',
+        'Bangladesh',
+        'Pakistan',
+        'China'
+    ];
+
 }
