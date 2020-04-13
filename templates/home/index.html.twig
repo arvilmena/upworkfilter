@@ -8,7 +8,7 @@
 
     <div class="row">
         <div class="col col-12">
-            Total results: <strong>{{ pagination.getTotalItemCount }}</strong>
+            Total results: <strong class="js-total-items">{{ pagination.getTotalItemCount }}</strong>
             {% if last_scrape|length %}
                 <br>Last crawled on: <strong>{{ last_scrape.crawled_at|date('F jS Y g:i:a', "Asia/Manila") }}</strong>
             {% endif %}
@@ -31,7 +31,7 @@
                         {% set link = path( 'project-read', {id: project.getId()} ) %}
                         <div class="card">
                             <div class="card-header">
-                                <a class="js-project-link" href="{{ link }}" target="_blank"><strong>{{ project.getTitle() }}</strong></a>
+                                <a class="js-project-link" href="{{ link }}" target="_blank" data-platform="{{ project.getPlatform() }}"><strong>{{ project.getTitle() }}</strong></a>
                             </div>
                             <div class="card-body">
 
@@ -61,10 +61,10 @@
 
             <div class="col col-12 col-md-2">
                 <strong>Recently opened</strong>
-                <ul class="list-group">
+                <ul class="list-group js-recently-opened">
                     {% for project in recentlyReadProjects %}
                         <li>
-                            <a href="{{ project.getUrl() }}" target="_blank">{{ project.getTitle() }}</a>
+                            <a href="{{ project.getUrl() }}" target="_blank" data-platform="{{ project.getPlatform() }}">{{ project.getTitle() }}</a>
                             <span class="badge badge-pill badge-success">{{ project.getPlatform() }}</span>
                         </li>
                     {% endfor %}
@@ -144,12 +144,21 @@
             });
         });
         $(document).ready(function() {
-            var handleClick = function(e) {
-                var $card = $(this).closest('.card');
+            var handleClick = function($el) {
+                var $card = $el.closest('.card');
                 if ( 0 === $card.length ) return;
+
+                var $recentlyOpenedlist = $('.js-recently-opened');
+                $recentlyOpenedlist.prepend('<li><a href="' + $el[0].href + '" target="_blank" data-platform="' + $el.data('platform') + '">'+ $el.text() +'</a><span class="badge badge-pill badge-success">' + $el.data('platform') + '</span></li>')
+
+                var $totalResultCount = $('.js-total-items');
+                $totalResultCount.text( (parseInt($totalResultCount.text()) - 1) );
+
                 $card.remove();
             };
-            $('.js-project-link').click(handleClick);
+            $('.js-project-link').click(function(e) {
+                handleClick($(this));
+            });
             $(document).on("mousedown", function (e1) {
                 if (e1.which === 2) {
                     $(document).one("mouseup", function (e2) {
@@ -165,9 +174,7 @@
                 window.open(
                     $(this)[0].href, "_blank"
                 );
-                var $card = $(this).closest('.card');
-                if ( 0 === $card.length ) return;
-                $card.remove();
+                handleClick($(this));
             });
         });
     </script>
