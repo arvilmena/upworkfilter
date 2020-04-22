@@ -244,12 +244,10 @@ class FetchProjectsCommand extends Command
         $biddable_projects = 0;
 
         $io->writeln('Scraping Upwork...');
-
         $biddable_projects = $biddable_projects + $this->scrapeUpwork($io);
 
-        $io->writeln('Scraping PeoplePerHour...');
-
-        $biddable_projects = $biddable_projects + $this->scrapePPH($io);
+//        $io->writeln('Scraping PeoplePerHour...');
+//        $biddable_projects = $biddable_projects + $this->scrapePPH($io);
 
         if($biddable_projects > 0) {
             $io->success(sprintf('Total of %d new projects that can be bid on added.', $biddable_projects));
