@@ -19,6 +19,19 @@ class ProjectRepository extends ServiceEntityRepository
         parent::__construct($registry, Project::class);
     }
 
+    public function findOldAndWasRead()
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.has_been_read = :has_been_read')
+            ->setParameter('has_been_read', true)
+            ->andWhere('p.posted_at < :posted_at')
+            ->setParameter('posted_at', date('Y-m-d H:i:s', strtotime('-3 days')))
+            ->orderBy('p.posted_at', 'ASC')
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     // /**
     //  * @return Project[] Returns an array of Project objects
     //  */

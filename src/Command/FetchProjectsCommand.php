@@ -241,6 +241,22 @@ class FetchProjectsCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        $io->writeln('Deleting old red projects...');
+        /**
+         * @var Project[] $old_projects
+         */
+        $old_projects = $this->projectRepository->findOldAndWasRead();
+
+        if ( ! empty($old_projects) ) {
+            foreach($old_projects as $old_project) {
+                $io->writeln(sprintf("> Deleting \"%s\" posted_at %s", $old_project->getTitle(), $old_project->getPostedAt()->format('F j g:i:a')));
+                $this->entityManager->remove($old_project);
+            }
+        } else {
+            $io->writeln('> Nothing to delete');
+        }
+        $this->entityManager->flush();
+
         $biddable_projects = 0;
 
         $io->writeln('Scraping Upwork...');
