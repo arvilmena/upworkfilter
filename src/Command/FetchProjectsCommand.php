@@ -3,7 +3,9 @@
 namespace App\Command;
 
 use App\Entity\Project;
+use App\Entity\Scrape;
 use App\Repository\ProjectRepository;
+use App\Repository\ScrapeRepository;
 use App\Service\AppUtils;
 use App\Service\Upwork\UpworkProjectListingScraperService;
 use App\Service\Upwork\UpworkProjectPageAnalyzerService;
@@ -41,8 +43,12 @@ class FetchProjectsCommand extends Command
      * @var UpworkProjectPageAnalyzerService
      */
     private $upworkProjectPageAnalyzerService;
+    /**
+     * @var ScrapeRepository
+     */
+    private $scrapeRepository;
 
-    public function __construct(string $name = null, EntityManagerInterface $entityManager, AppUtils $appUtils, ProjectRepository $projectRepository, UpworkProjectListingScraperService $upworkProjectListingScraperService, UpworkProjectPageAnalyzerService $upworkProjectPageAnalyzerService)
+    public function __construct(string $name = null, EntityManagerInterface $entityManager, AppUtils $appUtils, ProjectRepository $projectRepository, UpworkProjectListingScraperService $upworkProjectListingScraperService, UpworkProjectPageAnalyzerService $upworkProjectPageAnalyzerService, ScrapeRepository $scrapeRepository)
     {
         parent::__construct($name);
         $this->crawl_id = Uuid::uuid4()->toString();
@@ -51,6 +57,7 @@ class FetchProjectsCommand extends Command
         $this->projectRepository = $projectRepository;
         $this->upworkProjectListingScraperService = $upworkProjectListingScraperService;
         $this->upworkProjectPageAnalyzerService = $upworkProjectPageAnalyzerService;
+        $this->scrapeRepository = $scrapeRepository;
     }
 
     protected function configure()
@@ -110,6 +117,8 @@ class FetchProjectsCommand extends Command
             $title = rtrim($title, '- Upwork');
             $title = trim($title);
 
+            $budget = (float) filter_var( $budget, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION );
+
             $requests[] = [
                 'link' => $link,
                 'title' => $title,
@@ -149,6 +158,20 @@ class FetchProjectsCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        $io->writeln('Deleting old scrapes...');
+        /**
+         * @var Scrape[] $oldScrapes
+         */
+        $oldScrapes = $this->scrapeRepository->findOlderThan( (new \DateTime('now'))->modify('-12 hour') );
+        if ( ! empty($oldScrapes) ) {
+            $io->writeln(sprintf("> Deleting \"%d\" scrape records.", count($oldScrapes)));
+            foreach($oldScrapes as $oldScrape) {
+                $this->entityManager->remove($oldScrape);
+            }
+        } else {
+            $io->writeln("> No scrape record to delete.");
+        }
+
         $io->writeln('Deleting old red projects...');
         /**
          * @var Project[] $old_projects
@@ -169,9 +192,6 @@ class FetchProjectsCommand extends Command
 
         $io->writeln('Scraping Upwork...');
         $biddable_projects = $biddable_projects + $this->scrapeUpwork($io);
-
-//        $io->writeln('Scraping PeoplePerHour...');
-//        $biddable_projects = $biddable_projects + $this->scrapePPH($io);
 
         if($biddable_projects > 0) {
             $io->success(sprintf('Total of %d new projects that can be bid on added.', $biddable_projects));

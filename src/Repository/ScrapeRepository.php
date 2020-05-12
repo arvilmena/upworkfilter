@@ -19,6 +19,15 @@ class ScrapeRepository extends ServiceEntityRepository
         parent::__construct($registry, Scrape::class);
     }
 
+    public function findOlderThan(\DateTime $dateTime) {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.crawled_at < :date_time')
+            ->setParameter('date_time', $dateTime->format('Y-m-d'))
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     // /**
     //  * @return Scrape[] Returns an array of Scrape objects
     //  */

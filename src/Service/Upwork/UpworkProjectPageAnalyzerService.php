@@ -54,13 +54,19 @@ class UpworkProjectPageAnalyzerService {
             $project->setShouldBid(false);
         }
 
+        if ( ! empty($budget) ) {
+            $project->setBudget($budget);
+            $budget_float_form = (float) filter_var( $budget, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION );
+            if ( 0 !== (int) $budget_float_form && $budget < 75 ) {
+                $project->setShouldBid(false);
+            }
+
+        }
+
         if ( false !== $project->getShouldBid() ) {
             $project->setShouldBid(true);
         }
 
-        if ( ! empty($budget) ) {
-            $project->setBudget($budget);
-        }
         return $project;
     }
 
