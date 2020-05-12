@@ -9,8 +9,6 @@
 /vendor/
 ###< symfony/framework-bundle ###
 
-!/var/app.db
-
 ###> symfony/phpunit-bridge ###
 .phpunit
 .phpunit.result.cache
