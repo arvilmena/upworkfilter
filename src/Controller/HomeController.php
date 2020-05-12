@@ -24,7 +24,7 @@ class HomeController extends AbstractController
         $qb = $projectRepository->createQueryBuilder('p');
         $qb->andWhere($qb->expr()->eq('p.should_bid', true));
         $qb->andWhere($qb->expr()->neq('p.has_been_read', true));
-        $qb->orderBy('p.posted_at', 'ASC');
+        $qb->orderBy('p.posted_at', 'DESC');
         $query = $qb->getQuery();
 
         $pagination = $paginator->paginate(
