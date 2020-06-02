@@ -32,6 +32,23 @@ class ProjectRepository extends ServiceEntityRepository
             ;
     }
 
+    public function getBiddableQuery() {
+        $qb = $this->createQueryBuilder('p');
+        $qb->andWhere($qb->expr()->eq('p.should_bid', true));
+        $qb->andWhere($qb->expr()->neq('p.has_been_read', true));
+        $qb->orderBy('p.posted_at', 'DESC');
+        return $qb->getQuery();
+    }
+
+    public function findUnread()
+    {
+        $qb = $this->createQueryBuilder('p');
+        $qb->andWhere($qb->expr()->eq('p.should_bid', true));
+        $qb->andWhere($qb->expr()->neq('p.has_been_read', true));
+        $qb->orderBy('p.posted_at', 'DESC');
+        return $qb->getQuery()->getResult();
+    }
+
     // /**
     //  * @return Project[] Returns an array of Project objects
     //  */

@@ -28,10 +28,6 @@ class FetchProjectsCommand extends Command
      */
     private $crawl_id;
     /**
-     * @var AppUtils
-     */
-    private $appUtils;
-    /**
      * @var ProjectRepository
      */
     private $projectRepository;
@@ -48,12 +44,11 @@ class FetchProjectsCommand extends Command
      */
     private $scrapeRepository;
 
-    public function __construct(string $name = null, EntityManagerInterface $entityManager, AppUtils $appUtils, ProjectRepository $projectRepository, UpworkProjectListingScraperService $upworkProjectListingScraperService, UpworkProjectPageAnalyzerService $upworkProjectPageAnalyzerService, ScrapeRepository $scrapeRepository)
+    public function __construct(string $name = null, EntityManagerInterface $entityManager, ProjectRepository $projectRepository, UpworkProjectListingScraperService $upworkProjectListingScraperService, UpworkProjectPageAnalyzerService $upworkProjectPageAnalyzerService, ScrapeRepository $scrapeRepository)
     {
         parent::__construct($name);
         $this->crawl_id = Uuid::uuid4()->toString();
         $this->entityManager = $entityManager;
-        $this->appUtils = $appUtils;
         $this->projectRepository = $projectRepository;
         $this->upworkProjectListingScraperService = $upworkProjectListingScraperService;
         $this->upworkProjectPageAnalyzerService = $upworkProjectPageAnalyzerService;
@@ -162,7 +157,7 @@ class FetchProjectsCommand extends Command
         /**
          * @var Scrape[] $oldScrapes
          */
-        $oldScrapes = $this->scrapeRepository->findOlderThan( (new \DateTime('now'))->modify('-12 hour') );
+        $oldScrapes = $this->scrapeRepository->findOlderThan( (new \DateTime('now'))->modify('-6 hour') );
         if ( ! empty($oldScrapes) ) {
             $io->writeln(sprintf("> Deleting \"%d\" scrape records.", count($oldScrapes)));
             foreach($oldScrapes as $oldScrape) {
