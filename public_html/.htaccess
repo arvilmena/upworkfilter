@@ -56,9 +56,4 @@ DirectoryIndex index.php
         # RedirectTemp cannot be used instead
     </IfModule>
 </IfModule>
-AuthGroupFile /dev/null
-AuthType Basic
-AuthUserFile /home/upworkfilter/domains/upworkfilter.ml/.htpasswd/public_html/.htpasswd
-AuthName "LOGIN REQUIRED"
-require valid-user
-ErrorDocument 401 "Unauthorized Access"
+
