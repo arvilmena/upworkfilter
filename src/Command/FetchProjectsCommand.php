@@ -6,7 +6,6 @@ use App\Entity\Project;
 use App\Entity\Scrape;
 use App\Repository\ProjectRepository;
 use App\Repository\ScrapeRepository;
-use App\Service\AppUtils;
 use App\Service\Upwork\UpworkProjectListingScraperService;
 use App\Service\Upwork\UpworkProjectPageAnalyzerService;
 use Doctrine\ORM\EntityManagerInterface;
