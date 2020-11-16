@@ -32,6 +32,17 @@ class ProjectRepository extends ServiceEntityRepository
             ;
     }
 
+    public function findMoreThan2WeekOldProjects()
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.posted_at < :posted_at')
+            ->setParameter('posted_at', date('Y-m-d H:i:s', strtotime('-14 days')))
+            ->orderBy('p.posted_at', 'ASC')
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     public function getBiddableQuery() {
         $qb = $this->createQueryBuilder('p');
         $qb->andWhere($qb->expr()->eq('p.should_bid', true));

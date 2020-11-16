@@ -181,6 +181,17 @@ class FetchProjectsCommand extends Command
         } else {
             $io->writeln('> Nothing to delete');
         }
+
+        $io->writeln('Deleting 2 week old projects...');
+        $old_projects = $this->projectRepository->findMoreThan2WeekOldProjects();
+        if ( ! empty( $old_projects ) ) {
+            foreach($old_projects as $old_project) {
+                $io->writeln(sprintf("> Deleting \"%s\" posted_at %s", $old_project->getTitle(), $old_project->getPostedAt()->format('F j g:i:a')));
+                $this->entityManager->remove($old_project);
+            }
+        } else {
+            $io->writeln('> Nothing to delete');
+        }
         $this->entityManager->flush();
 
         $biddable_projects = 0;
